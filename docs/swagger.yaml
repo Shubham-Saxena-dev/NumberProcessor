@@ -1,0 +1,40 @@
+host: localhost:8080
+info:
+  contact: {}
+  description: Take home test exercise.
+  title: CARIAD
+  version: "1.0"
+paths:
+  /numbers:
+    get:
+      description: hit the query param api and return merged non-duplicate and sorted
+        result
+      parameters:
+      - collectionFormat: csv
+        description: urls
+        example: localhost:8090/primes
+        in: query
+        items:
+          type: string
+        name: u
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK" x-example([1, 2, 3, 4, 5])
+          schema:
+            items:
+              type: integer
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              type: integer
+            type: array
+      summary: get numbers slice
+schemes:
+- http
+swagger: "2.0"
