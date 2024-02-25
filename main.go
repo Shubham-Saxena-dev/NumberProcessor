@@ -2,25 +2,29 @@ package main
 
 import (
 	"CARIAD/config"
-	"CARIAD/internal/customerrors"
+	"CARIAD/internal/cache"
 	"CARIAD/pkg/controllers"
 	"CARIAD/pkg/service"
 	"CARIAD/routes"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 var (
-	serv         service.NumberService
-	controller   controllers.NumberController
-	errCollector *customerrors.ErrorHandler
+	serv       service.NumberService
+	controller controllers.NumberController
 )
 
 func init() {
 	config.InitFromFile(".env")
-	errCollector = customerrors.NewErrorHandler()
 }
 
+// @title CARIAD
+// @version 1.0
+// @description Take home test exercise.
+// @host localhost:8080
+// @schemes http
 func main() {
 	log.Info("Hi, this is CARIAD take home test")
 	createServer()
@@ -31,13 +35,15 @@ func createServer() {
 	server := gin.Default()
 	initializeLayers()
 	routes.RegisterHandlers(server, controller).RegisterHandlers()
-	err := server.Run("localhost:" + config.EnvConfigs.App.AppPort)
+	err := server.Run()
 	if err != nil {
-		errCollector.FailOnError(err, "Server initialization failed")
+		gin.Logger()
+		log.Error(err)
+		os.Exit(1)
 	}
 }
 
-func initializeLayers() { // we can also have dependency injector
-	serv = service.NewNumberService(errCollector)
-	controller = controllers.NewController(serv, errCollector)
+func initializeLayers() {
+	serv = service.NewNumberService(cache.NewCacheService())
+	controller = controllers.NewController(serv)
 }

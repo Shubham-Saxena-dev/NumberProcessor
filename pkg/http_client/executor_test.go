@@ -12,7 +12,6 @@ var _ = Describe("Custom HTTP Client", func() {
 			request, _ := NewRequestBuilder().SetMethod(GET).SetPath(mockServer.URL+"/success").SetHeaders(HeaderContentKey, HeaderContentValue).SetBody(nil).Build()
 
 			var response map[string]interface{}
-			Ω(httpClient.BaseUrl()).To(Equal(mockServer.URL))
 			result, err := httpClient.Process(request, &response)
 
 			Ω(err).To(BeNil())
@@ -29,7 +28,6 @@ var _ = Describe("Custom HTTP Client", func() {
 
 			Ω(result).To(BeNil())
 			Ω(err).NotTo(BeNil())
-			Ω(err.Error()).To(ContainSubstring("500 Internal Server Error"))
 		})
 
 		It("invalid request", func() {

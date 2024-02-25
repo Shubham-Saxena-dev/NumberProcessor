@@ -1,10 +1,10 @@
 package http_client
 
 import (
-	"encoding/json"
-	"errors"
+	"CARIAD/internal/customerrors"
 	"fmt"
 	"github.com/avast/retry-go"
+	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -12,11 +12,11 @@ import (
 
 const (
 	NumberOfRetries = 3
-	DelayPeriod     = 20 * time.Millisecond
+	DelayPeriod     = 10 * time.Millisecond
 )
 
 type HTTPClient interface {
-	Process(request *http.Request, response interface{}) (interface{}, error)
+	Process(*http.Request, interface{}) (interface{}, error)
 }
 
 type client struct {
@@ -30,7 +30,6 @@ func NewHttpClient(httpClient *http.Client) HTTPClient {
 }
 
 func (c *client) Process(request *http.Request, response interface{}) (interface{}, error) {
-
 	resp, err := executeRequest(request, c.httpClient)
 	if err != nil {
 		return nil, err
@@ -38,11 +37,11 @@ func (c *client) Process(request *http.Request, response interface{}) (interface
 
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return nil, errors.New(resp.Status)
+		return nil, customerrors.ErrorHTTPClient(request.URL.Path, err)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, err
+	if err := jsoniter.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, customerrors.ErrorFailedToDecode(request.URL.Path, err)
 	}
 	return response, nil
 }

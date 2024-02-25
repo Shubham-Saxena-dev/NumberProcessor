@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gitlab.vestiairecollective.com/services/apis/prise/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -24,7 +23,6 @@ var (
 var _ = Describe("Http client", func() {
 
 	BeforeSuite(func() {
-		config.InitFromFile("testing")
 		mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path == "/success" {
 				w.WriteHeader(http.StatusOK)
@@ -35,7 +33,7 @@ var _ = Describe("Http client", func() {
 			}
 		}))
 
-		httpClient = NewHttpClient(mockServer.URL, http.DefaultClient)
+		httpClient = NewHttpClient(http.DefaultClient)
 		mockResponse = map[string]interface{}{"myHeaderKey": "myHeaderValue"}
 	})
 

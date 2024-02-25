@@ -6,47 +6,37 @@ import (
 )
 
 var (
-	ErrHTTPClient   = errors.New("HTTP client error")
-	ErrFailedToCast = errors.New("failed to cast response")
-)
-
-type ClientType string
-
-const (
-	Ren ClientType = "REN"
-	Cex ClientType = "CEX"
+	ErrHTTPClient     = errors.New("HTTP client error")
+	ErrFailedToDecode = errors.New("failed to decode into given response")
 )
 
 type HttpError struct {
-	context    string
-	clientType ClientType
-	payload    interface{}
-	ErrType    error
-	cause      error
+	context string
+	payload interface{}
+	ErrType error
+	cause   error
 }
 
-func newHttpError(context string, clientType ClientType, payload interface{}, errType error, cause error) *HttpError {
+func newHttpError(context string, errType error, cause error) *HttpError {
 	return &HttpError{
-		context:    context,
-		clientType: clientType,
-		payload:    payload,
-		ErrType:    errType,
-		cause:      cause,
+		context: context,
+		ErrType: errType,
+		cause:   cause,
 	}
 }
 
 func (h *HttpError) Error() string {
-	return fmt.Sprintf("%s: Client %s call failed for: %v due to %v: %v", h.context, h.clientType, h.payload, h.ErrType, h.cause)
+	return fmt.Sprintf("%s: client call failed due to %v: %v", h.context, h.ErrType, h.cause)
 }
 
 func (h *HttpError) Unwrap() error {
 	return h.cause
 }
 
-func ErrorHTTPClient(context string, clientType ClientType, payload interface{}, err error) *HttpError {
-	return newHttpError(context, clientType, payload, ErrHTTPClient, err)
+func ErrorHTTPClient(context string, err error) *HttpError {
+	return newHttpError(context, ErrHTTPClient, err)
 }
 
-func ErrorFailedToCast(context string, clientType ClientType, payload interface{}, err error) *HttpError {
-	return newHttpError(context, clientType, payload, ErrFailedToCast, err)
+func ErrorFailedToDecode(context string, err error) *HttpError {
+	return newHttpError(context, ErrFailedToDecode, err)
 }
